@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Document Uploader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #003049;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #d62828;
+        }
+        form {
+            margin-bottom: 30px;
+        }
+        input[type="file"] {
+            padding: 10px;
+        }
+        button {
+            background-color: #d62828;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+        a.delete-btn {
+            color: red;
+            text-decoration: none;
+        }
+        .pagination {
+            margin-top: 20px;
+        }
+        .pagination a {
+            padding: 8px 12px;
+            margin: 0 5px;
+            background-color: #d62828;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .pagination a.active {
+            background-color: #003049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Assessment Uploaded by Rishabh</h1>
+
+    <h2>Upload a Document</h2>
+    <form method="post" enctype="multipart/form-data" th:action="@{/upload}">
+        <input type="file" name="file" required />
+        <button type="submit">Upload</button>
+    </form>
+
+    <h2>Uploaded Documents</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>File Name</th>
+            <th>Uploaded At</th>
+            <th>Action</th>
+        </tr>
+        <tr th:each="doc : ${documents}">
+            <td th:text="${doc.id}"></td>
+            <td th:text="${doc.fileName}"></td>
+            <td th:text="${#temporals.format(doc.uploadedAt, 'yyyy-MM-dd HH:mm')}"></td>
+            <td><a th:href="@{'/delete/' + ${doc.id}}" class="delete-btn">Delete</a></td>
+        </tr>
+    </table>
+
+    <div class="pagination">
+        <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+           th:href="@{/?page={p}(p=${i})}"
+           th:text="${i + 1}"
+           th:classappend="${i == currentPage} ? 'active' : ''">
+        </a>
+    </div>
+</body>
+</html>
