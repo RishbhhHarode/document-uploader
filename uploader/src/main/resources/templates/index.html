@@ -40,9 +40,23 @@
             text-align: left;
             border-bottom: 1px solid #ccc;
         }
-        a.delete-btn {
-            color: red;
+        a.delete-btn, a.view-btn, a.download-btn {
             text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        a.delete-btn {
+            color: white;
+            background-color: red;
+        }
+        a.view-btn {
+            color: white;
+            background-color: #1982c4;
+        }
+        a.download-btn {
+            color: white;
+            background-color: #2a9d8f;
         }
         .pagination {
             margin-top: 20px;
@@ -81,7 +95,11 @@
             <td th:text="${doc.id}"></td>
             <td th:text="${doc.fileName}"></td>
             <td th:text="${#temporals.format(doc.uploadedAt, 'yyyy-MM-dd HH:mm')}"></td>
-            <td><a th:href="@{'/delete/' + ${doc.id}}" class="delete-btn">Delete</a></td>
+            <td>
+                <a th:href="@{'/view/' + ${doc.id}}" class="view-btn" target="_blank">View</a>
+                <a th:href="@{'/download/' + ${doc.id}}" class="download-btn">Download</a>
+                <a th:href="@{'/delete/' + ${doc.id}}" class="delete-btn">Delete</a>
+            </td>
         </tr>
     </table>
 

@@ -4,12 +4,14 @@ import com.document.uploader.model.Document;
 import com.document.uploader.repository.DocumentRepository;
 import com.document.uploader.service.DocumentService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.io.IOException;
 
@@ -45,6 +47,7 @@ public class DocumentController {
         }
         return "redirect:/";
     }
+
     @GetMapping("/delete/{id}")
     public String deleteFile(@PathVariable Long id) {
         try {
@@ -53,5 +56,17 @@ public class DocumentController {
             e.printStackTrace();
         }
         return "redirect:/";
+    }
+
+    // ✅ NEW: View file in browser
+    @GetMapping("/view/{id}")
+    public ResponseEntity<Resource> viewFile(@PathVariable Long id) throws IOException {
+        return documentService.viewFile(id);
+    }
+
+    // ✅ NEW: Download file
+    @GetMapping("/download/{id}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long id) throws IOException {
+        return documentService.downloadFile(id);
     }
 }

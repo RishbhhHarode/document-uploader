@@ -1,18 +1,25 @@
 package com.document.uploader.service;
 
-import com.document.uploader.model.Document;
-import com.document.uploader.repository.DocumentRepository;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.document.uploader.model.Document;
+import com.document.uploader.repository.DocumentRepository;
 
 @Service
 public class DocumentService {
@@ -30,6 +37,7 @@ public class DocumentService {
         String fileName = file.getOriginalFilename();
         Path filePath = Paths.get(uploadDir, fileName);
 
+        // Create folder if it doesn't exist
         Files.createDirectories(filePath.getParent());
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -41,14 +49,6 @@ public class DocumentService {
         repository.save(doc);
     }
 
-    public Page<Document> getAllDocuments(int page, int size) {
-        return repository.findAll(PageRequest.of(page, size));
-    }
-
-    public Optional<Document> getDocumentById(Long id) {
-        return repository.findById(id);
-    }
-
     public void deleteFile(Long id) throws IOException {
         Optional<Document> optionalDoc = repository.findById(id);
         if (optionalDoc.isPresent()) {
@@ -56,5 +56,47 @@ public class DocumentService {
             Files.deleteIfExists(Paths.get(doc.getFilePath()));
             repository.deleteById(id);
         }
+    }
+
+    // ✅ NEW: View file in browser
+    public ResponseEntity<Resource> viewFile(Long id) throws IOException {
+        Optional<Document> optionalDoc = repository.findById(id);
+        if (optionalDoc.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Document doc = optionalDoc.get();
+        File file = new File(doc.getFilePath());
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new FileSystemResource(file);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + doc.getFileName() + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
+    }
+
+    // ✅ NEW: Download file
+    public ResponseEntity<Resource> downloadFile(Long id) throws IOException {
+        Optional<Document> optionalDoc = repository.findById(id);
+        if (optionalDoc.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Document doc = optionalDoc.get();
+        File file = new File(doc.getFilePath());
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new FileSystemResource(file);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + doc.getFileName() + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 }
